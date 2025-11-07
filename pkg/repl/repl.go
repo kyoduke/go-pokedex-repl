@@ -53,9 +53,11 @@ func StartRepl() {
 			continue
 		}
 
-		err := supportedCommands[commandName].Callback(&cfg)
+		params := cleanedInput[1:]
+
+		err := supportedCommands[commandName].Callback(&cfg, params)
 		if err != nil {
-			fmt.Printf("There was an error: %v\n", err)
+			fmt.Printf("Error: %v\n", err)
 		}
 
 		if err := reader.Err(); err != nil {
