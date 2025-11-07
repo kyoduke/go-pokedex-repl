@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
+	"github.com/kyoduke/pokedex/internal/pokeapi"
 	"github.com/kyoduke/pokedex/pkg/commands"
 )
 
@@ -26,6 +28,12 @@ func cleanInput(text string) []string {
 }
 
 func StartRepl() {
+	cfg := commands.Config{
+		PokeapiClient:       pokeapi.NewClient(time.Minute),
+		NextLocationAreaURL: nil,
+		PrevLocationAreaURL: nil,
+	}
+
 	supportedCommands := commands.GetCommands()
 
 	reader := bufio.NewScanner(os.Stdin)
@@ -45,7 +53,7 @@ func StartRepl() {
 			continue
 		}
 
-		err := supportedCommands[commandName].Callback()
+		err := supportedCommands[commandName].Callback(&cfg)
 		if err != nil {
 			fmt.Printf("There was an error: %v\n", err)
 		}
