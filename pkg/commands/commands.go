@@ -13,7 +13,7 @@ type Config struct {
 type cliCommand struct {
 	Name        string
 	Description string
-	Callback    func(*Config, []string) error
+	Callback    func(*Config, ...string) error
 }
 
 func GetCommands() map[string]cliCommand {

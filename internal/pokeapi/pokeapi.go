@@ -2,6 +2,8 @@ package pokeapi
 
 import (
 	"encoding/json"
+	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"time"
@@ -64,4 +66,46 @@ func (c *PokeapiClient) ListLocationAreas(pageURL *string) (RespLocation, error)
 	}
 
 	return respLocations, nil
+}
+
+func (c *PokeapiClient) ListAreaEncounters(area *string) (RespAreaInfo, error) {
+	if area == nil {
+		return RespAreaInfo{}, errors.New("Error when calling ListAreaEncounters: area cannot be nil")
+	}
+
+	fullURL := baseURL + "location-area/" + *area
+
+	if val, ok := c.cache.Get(fullURL); ok {
+		var respAreaInfo RespAreaInfo
+		json.Unmarshal(val, &respAreaInfo)
+
+		return respAreaInfo, nil
+	}
+
+	req, err := http.NewRequest("GET", fullURL, nil)
+	if err != nil {
+		return RespAreaInfo{}, err
+	}
+
+	res, err := c.httpClient.Do(req)
+	if err != nil {
+		return RespAreaInfo{}, err
+	}
+	defer res.Body.Close()
+
+	if res.StatusCode == http.StatusNotFound {
+		return RespAreaInfo{}, fmt.Errorf("%s area not found", *area)
+	}
+
+	respData, err := io.ReadAll(res.Body)
+	if err != nil {
+		return RespAreaInfo{}, err
+	}
+
+	c.cache.Add(fullURL, respData)
+
+	var respAreaInfo RespAreaInfo
+	json.Unmarshal(respData, &respAreaInfo)
+
+	return respAreaInfo, nil
 }

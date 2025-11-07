@@ -53,9 +53,9 @@ func StartRepl() {
 			continue
 		}
 
-		params := cleanedInput[1:]
+		args := cleanedInput[1:]
 
-		err := supportedCommands[commandName].Callback(&cfg, params)
+		err := supportedCommands[commandName].Callback(&cfg, args...)
 		if err != nil {
 			fmt.Printf("Error: %v\n", err)
 		}
