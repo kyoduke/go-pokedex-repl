@@ -15,8 +15,14 @@ type cacheEntry struct {
 	val       []byte
 }
 
-func NewCache() *Cache {
-	return &Cache{data: map[string]cacheEntry{}, mu: &sync.Mutex{}}
+func NewCache(interval time.Duration) *Cache {
+	c := &Cache{
+		data: map[string]cacheEntry{},
+		mu:   &sync.Mutex{},
+	}
+	go c.reapLoop(interval)
+
+	return c
 }
 
 func (c *Cache) Add(key string, val []byte) {
@@ -37,4 +43,22 @@ func (c *Cache) Get(key string) ([]byte, bool) {
 		return cEntry.val, true
 	}
 	return nil, false
+}
+
+func (c *Cache) reapLoop(interval time.Duration) {
+	t := time.NewTicker(interval)
+	for range t.C {
+		c.reap(time.Now().UTC(), interval)
+	}
+}
+
+func (c *Cache) reap(now time.Time, last time.Duration) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	for k, v := range c.data {
+		if v.createdAt.Before(now.Add(-last)) {
+			delete(c.data, k)
+		}
+	}
 }

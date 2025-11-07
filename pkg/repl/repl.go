@@ -29,7 +29,7 @@ func cleanInput(text string) []string {
 
 func StartRepl() {
 	cfg := commands.Config{
-		PokeapiClient:       pokeapi.NewClient(time.Minute),
+		PokeapiClient:       pokeapi.NewClient(time.Minute, time.Minute*5),
 		NextLocationAreaURL: nil,
 		PrevLocationAreaURL: nil,
 	}

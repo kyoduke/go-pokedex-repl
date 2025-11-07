@@ -16,10 +16,10 @@ type PokeapiClient struct {
 	cache      *pokecache.Cache
 }
 
-func NewClient(timeout time.Duration) PokeapiClient {
+func NewClient(timeout, cacheInterval time.Duration) PokeapiClient {
 	return PokeapiClient{
 		httpClient: http.Client{Timeout: timeout},
-		cache:      pokecache.NewCache(),
+		cache:      pokecache.NewCache(cacheInterval),
 	}
 }
 
