@@ -32,6 +32,7 @@ func StartRepl() {
 		PokeapiClient:       pokeapi.NewClient(time.Minute, time.Minute*5),
 		NextLocationAreaURL: nil,
 		PrevLocationAreaURL: nil,
+		CatchedPokemons:     map[string]pokeapi.RespPokemon{},
 	}
 
 	supportedCommands := commands.GetCommands()

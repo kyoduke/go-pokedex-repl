@@ -109,3 +109,46 @@ func (c *PokeapiClient) ListAreaEncounters(area *string) (RespAreaInfo, error) {
 
 	return respAreaInfo, nil
 }
+
+func (c *PokeapiClient) CatchPokemon(pokemonName string) (RespPokemon, error) {
+	fullURL := baseURL + "/pokemon/" + pokemonName
+
+	if val, ok := c.cache.Get(fullURL); ok {
+		var respPokemon RespPokemon
+		err := json.Unmarshal(val, &respPokemon)
+		if err != nil {
+			return RespPokemon{}, err
+		}
+
+		return respPokemon, nil
+	}
+
+	req, err := http.NewRequest("GET", fullURL, nil)
+	if err != nil {
+		return RespPokemon{}, err
+	}
+
+	res, err := c.httpClient.Do(req)
+	if err != nil {
+		return RespPokemon{}, err
+	}
+	defer res.Body.Close()
+
+	if res.StatusCode == http.StatusNotFound {
+		return RespPokemon{}, fmt.Errorf("pokemon with name '%s' could not be found", pokemonName)
+	}
+
+	respData, err := io.ReadAll(res.Body)
+	if err != nil {
+		return RespPokemon{}, err
+	}
+	c.cache.Add(fullURL, respData)
+
+	var respPokemon RespPokemon
+	err = json.Unmarshal(respData, &respPokemon)
+	if err != nil {
+		return RespPokemon{}, err
+	}
+
+	return respPokemon, nil
+}
